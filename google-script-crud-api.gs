@@ -62,8 +62,8 @@ function doInsert(req, sheet) {
    for (var i = 1; i <= Row; i++) {
       var id1 = sheet.getRange(i, 1).getValue();
       if(id1>id) id=id1;
-      var usernameTemp = sheet.getRange(i, 2).getValue();
-      if (usernameTemp == username) {
+      var titleTemp = sheet.getRange(i, 2).getValue();
+      if (titleTemp == title) {
          flag = 0;
          var result = "Title already exist";
       }
