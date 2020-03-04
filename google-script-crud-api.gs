@@ -4,7 +4,7 @@
 function doGet(req) {
    var action = req.parameter.action;
 
-   var db = SpreadsheetApp.openById("13gplpaV4zHk6Q5Y5-KVYgIr4EqKYO6YpxZYa4GlbKGI");
+   var db = SpreadsheetApp.openById("");
   
    // Don't forget to change your Sheet Name by default is 'Sheet1'
    var sheetUsers = db.getSheetByName("Sheet1");
@@ -47,37 +47,36 @@ function doRead(request, sheetObject)
 }
 
 /* Insert
- *  
- *  @request-parameter | action<string>&id=<number>&username=<string>&email=<string>
- *  @example-request | ?action=insert&id=2&username=test&email=test@gmail.com
+ *  Request for inser new record
+ *  @request-parameter | action<string>, title=<string>, description=<string>, email=<string>
+ *  @example-request | ?action=insert&title=demo&description=This is demo test&email=demo@gmail.com
  */
 function doInsert(req, sheet) {
-   var id = req.parameter.id;
-   var username = req.parameter.username;
+   var title = req.parameter.title;
+   var description = req.parameter.description;
    var email = req.parameter.email;
-   // all data your needed
-
-   var flag = 1;
+   var id    = 0;
+   var flag = 1; 
    var Row = sheet.getLastRow();
+  
    for (var i = 1; i <= Row; i++) {
-      /* getRange(i, 2) 
-       * i | is a row index
-       * 1 | is a id column index ('id')
-       */
-      var idTemp = sheet.getRange(i, 1).getValue();
-      if (idTemp == id) {
+      var id1 = sheet.getRange(i, 1).getValue();
+      if(id1>id) id=id1;
+      var usernameTemp = sheet.getRange(i, 2).getValue();
+      if (usernameTemp == username) {
          flag = 0;
-         var result = "Sorry bratha, id already exist";
+         var result = "Title already exist";
       }
    }
    
-   // add new row with recieved parameter from client
    if (flag == 1) {
+      id = id+1;
       var timestamp = Date.now();
       var currentTime = new Date().toLocaleString(); // Full Datetime
       var rowData = sheet.appendRow([
          id,
-         username,
+         title,
+         description,
          email,
          timestamp,
          currentTime
@@ -93,14 +92,13 @@ function doInsert(req, sheet) {
 /* Update
  * request for Update
  *
- * @request-parameter | id<string>, data<JSON>, action<string>
- * @example-request | ?action=update&id=1&data={"email":"demo@gmail.com", "username":"demo"}
+ * @request-parameter | action<string>, id<string>, data<JSON>, 
+ * @example-request | ?action=update&id=1&data={"email":"demo@gmail.com", "title":"demo","description":"This is demo"}
  */
 function doUpdate(req, sheet) 
 {
    var id = req.parameter.id;
    var updates = JSON.parse(req.parameter.data);
-  
    var lr = sheet.getLastRow();
 
    var headers = _getHeaderRow(sheet);
@@ -116,7 +114,6 @@ function doUpdate(req, sheet)
             if (updatesHeader[update] == header) {
                // Get ID for every row
                var rid = sheet.getRange(row, 1).getValue();
-
                if (rid == id) {
                   // Lets Update
                   sheet.getRange(row, i + 1).setValue(updates[updatesHeader[update]]);
@@ -136,8 +133,12 @@ function doUpdate(req, sheet)
 
 
 /* Delete
+ * Request for delete
  *
+ * @request-parameter | action<string>,id<number>
+ * @example-request | ?action=delete&id=2
  */
+ 
 function doDelete(req, sheet) {
    var id = req.parameter.id;
    var flag = 0;
@@ -180,8 +181,10 @@ function _readData(sheetObject, properties) {
    }
 
    var rows = _getDataRows(sheetObject),
-      data = [];
-
+   data = [];
+  
+   if(!rows) return data;
+  
    for (var r = 0, l = rows.length; r < l; r++) {
       var row = rows[r],
           record = {};
@@ -197,8 +200,11 @@ function _readData(sheetObject, properties) {
 
 function _getDataRows(sheetObject) {
    var sh = sheetObject;
-
-   return sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+  try {
+    return sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+  } catch(e) {
+    return false;
+   }
 }
 
 function _getHeaderRow(sheetObject) {
