@@ -4,7 +4,7 @@
 function doGet(req) {
    var action = req.parameter.action;
 
-   var db = SpreadsheetApp.openById("");
+   var db = SpreadsheetApp.openById("13gplpaV4zHk6Q5Y5-KVYgIr4EqKYO6YpxZYa4GlbKGI");
   
    // Don't forget to change your Sheet Name by default is 'Sheet1'
    var sheetUsers = db.getSheetByName("Sheet1");
@@ -47,7 +47,9 @@ function doRead(request, sheetObject)
 }
 
 /* Insert
- *
+ *  
+ *  @request-parameter | action<string>&id=<number>&username=<string>&email=<string>
+ *  @example-request | ?action=insert&id=2&username=test&email=test@gmail.com
  */
 function doInsert(req, sheet) {
    var id = req.parameter.id;
@@ -92,7 +94,7 @@ function doInsert(req, sheet) {
  * request for Update
  *
  * @request-parameter | id<string>, data<JSON>, action<string>
- * @example-request | ?action=update&data={"email":"ryandevstudio@gmail.com", "username":"nyancodeid"}
+ * @example-request | ?action=update&id=1&data={"email":"demo@gmail.com", "username":"demo"}
  */
 function doUpdate(req, sheet) 
 {
