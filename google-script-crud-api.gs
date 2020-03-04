@@ -2,12 +2,11 @@
  * All Request with Method Get will be proces here
  */
 function doGet(req) {
-   var action = req.parameter.action;
-
-   var db = SpreadsheetApp.openById("");
-  
-   // Don't forget to change your Sheet Name by default is 'Sheet1'
-   var sheetUsers = db.getSheetByName("Sheet1");
+  var db = SpreadsheetApp.openById(""); 
+  var action = req.parameter.action;
+  var table = req.parameter.table;
+ 
+  var sheetUsers = db.getSheetByName(table);
    
    switch(action) {
        case "read":
@@ -93,7 +92,7 @@ function doInsert(req, sheet) {
  * request for Update
  *
  * @request-parameter | action<string>, id<string>, data<JSON>, 
- * @example-request | ?action=update&id=1&data={"email":"demo@gmail.com", "title":"demo","description":"This is demo"}
+ * @example-request | ?action=update&id=1&data={"title":"demo","description":"This is demo", "email":"demo@gmail.com"}
  */
 function doUpdate(req, sheet) 
 {
