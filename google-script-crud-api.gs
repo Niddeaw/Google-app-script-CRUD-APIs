@@ -1,11 +1,11 @@
 /* Route
  * All Request with Method Get will be proces here
  */
+ var db = SpreadsheetApp.openById("");
 function doGet(req) {
-  var db = SpreadsheetApp.openById(""); 
+  
   var action = req.parameter.action;
   var table = req.parameter.table;
- 
   var sheetUsers = db.getSheetByName(table);
    
    switch(action) {
@@ -20,6 +20,9 @@ function doGet(req) {
            break;
        case "delete":
            return doDelete(req, sheetUsers);
+           break;
+        case "addVote":
+           return doAddVote(req, sheetUsers);
            break;
        default:
            return response().json({
@@ -88,6 +91,42 @@ function doInsert(req, sheet) {
    });
 }
 
+/* Add
+ *  Add vote for idea
+ *  @request-parameter | action<string>, table<string>, userEmail=<string>,ideaEmail=<string>
+ *  @example-request | ?action=addVote&table=vote&userEmail=test@gmail.com&ideaEmail=demo@gmail.com
+ */
+function doAddVote(req, sheet) {
+   var userEmail = req.parameter.userEmail;
+   var ideaEmail = req.parameter.ideaEmail;
+   var flag = 1; 
+   var Row = sheet.getLastRow();
+  
+   for (var i = 1; i <= Row; i++) {
+      var userEmailTemp = sheet.getRange(i, 1).getValue();
+      if (userEmailTemp == userEmail) {
+         flag = 0;
+         var result = "User with the email " + userEmail + " has already voted for an idea."
+      }
+   }
+   
+   if (flag == 1) {
+      var timestamp = Date.now();
+      var currentTime = new Date().toLocaleString(); // Full Datetime
+      var rowData = sheet.appendRow([
+         userEmail,
+         ideaEmail,
+         timestamp,
+         currentTime
+      ]);
+      var result = "Vote added successfully";
+   }
+
+   return response().json({
+      result: result
+   });
+}
+
 /* Update
  * request for Update
  *
@@ -134,7 +173,7 @@ function doUpdate(req, sheet)
 /* Delete
  * Request for delete
  *
- * @request-parameter | action<string>,id<number>
+ * @request-parameter | action<string>, id<number>
  * @example-request | ?action=delete&id=2
  */
  
@@ -147,11 +186,9 @@ function doDelete(req, sheet) {
       var idTemp = sheet.getRange(i, 1).getValue();
       if (idTemp == id) {
          sheet.deleteRow(i);
-         
-         var result = "deleted successfully";
+         var result = "Deleted successfully";
          flag = 1;
       }
-
    }
 
    if (flag == 0) {
@@ -171,7 +208,6 @@ function doDelete(req, sheet) {
 /* Service
  */
 function _readData(sheetObject, properties) {
-
    if (typeof properties == "undefined") {
       properties = _getHeaderRow(sheetObject);
       properties = properties.map(function (p) {
@@ -191,10 +227,29 @@ function _readData(sheetObject, properties) {
       for (var p in properties) {
          record[properties[p]] = row[p];
       }
-
+      record.voteCount = countVotes(record); 
       data.push(record);
    }
    return data;
+}
+
+function getTableData(tableName){
+  var table = db.getSheetByName(tableName);
+  return table.getDataRange().getValues();
+
+}
+
+function countVotes(idea){ 
+ var voteCount = 0;  
+ var data = getTableData("vote"); 
+  for (var i = 0; i < data.length; i++){
+    if (data[i][1] == idea.email){
+      voteCount++; 
+    }
+  }
+  
+  return voteCount; 
+  
 }
 
 function _getDataRows(sheetObject) {
@@ -208,7 +263,6 @@ function _getDataRows(sheetObject) {
 
 function _getHeaderRow(sheetObject) {
    var sh = sheetObject;
-
    return sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
 }
 
