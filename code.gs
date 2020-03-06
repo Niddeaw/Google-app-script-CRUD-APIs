@@ -1,7 +1,7 @@
 /* Route
  * All Request with Method Get will be proces here
  */
-var db = SpreadsheetApp.openById("13gplpaV4zHk6Q5Y5-KVYgIr4EqKYO6YpxZYa4GlbKGI");
+var db = SpreadsheetApp.openById("");
 var USER_MODEL = ["id", "name", "email", "profilephoto"];
 var IDEA_MODEL = ["id","title","description","email","startTime","endTime","tags"];
 var VOTE_MODEL = ["id", "ideaId", "email"];
