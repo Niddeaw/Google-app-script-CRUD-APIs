@@ -1,7 +1,7 @@
 /* Route
  * All Request with Method Get will be proces here
  */
-var db = SpreadsheetApp.openById("");
+var db = SpreadsheetApp.openById("13gplpaV4zHk6Q5Y5-KVYgIr4EqKYO6YpxZYa4GlbKGI");
 var USER_MODEL = ["id", "name", "email", "profilephoto"];
 var IDEA_MODEL = ["id","title","description","email","startTime","endTime","tags"];
 var VOTE_MODEL = ["id", "ideaId", "email"];
@@ -51,9 +51,10 @@ function doRead(req, currentTable)
  *  @example-request | ?action=insert&table=idea&data={title:"Test"}
  */
 function doInsert(req,currentTable,tableName) {
+  var result = "";
   var data = "";
   var id    = 0;
-  var flag = 1;
+  var flag = 1; // If value is 1 then it will create a new record and value is 0 means somthing went wrong
   var bodyData = JSON.parse(req.parameter.data);
   
   var row = currentTable.getLastRow();
@@ -78,20 +79,25 @@ function doInsert(req,currentTable,tableName) {
       break;
     default:
       flag = 0;
-      var result = "Table name is wrong";
+      result = "Table name is wrong";
       break;
   }
   
   if (flag == 1) {  
-    var timestamp = Date.now();
-    var currentTime = new Date().toLocaleString(); // Full Datetime
     var rowData = currentTable.appendRow(data);
-    var result = "Insertion successful";
+    return response().json({
+      status: "ok",
+      result: "Insertion successful",
+      data : rowData
+    });
+  } else {
+    return response().json({
+      status: "error",
+      result: result
+    });
   }
   
-  return response().json({
-    result: result
-  });
+  
 }
 
 /* Delete
