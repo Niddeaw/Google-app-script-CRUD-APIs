@@ -33,52 +33,17 @@ function doGet(req) {
 /* Read
  * request for all Data
  *
- * @request-parameter | action<string>
- * @example-request | ?action=read
+ * @request-parameter | action<string>, table<string>
+ * @example-request | ?action=read&table=vote
  */
-function doRead(request, sheetObject) 
+function doRead(req, currentTable) 
 {
    var data = {};
-   
-   data.records = _readData(sheetObject);
-
+   data.records = _readData(currentTable);
    return response().json(data);
 
 }
 
-function IDEA(id, title, description, email) { 
-  this.id = id;
-  this.title = title;
-  this.description = description;
-  this.email = email;
-  this.timestamp = Date.now();
-  this.createdOn = new Date().toLocaleString();
-}
-
-function VOTE(id, ideaId,email) { 
-  this.id = id;
-  this.ideaId = ideaId;
-  this.email = email;
-  this.timestamp = Date.now();
-  this.createdOn = new Date().toLocaleString();
-}
-
-function USER(id, name,email,profilephoto) { 
-  this.id = id;
-  this.name = name;
-  this.email = email;
-  this.profilephoto = profilephoto;
-  this.timestamp = Date.now();
-  this.createdOn = new Date().toLocaleString();
-}
-
-function filterReqBody(instance,ideaModel,data) {
- for(var key in data) {
-   if(ideaModel.includes(key))
-     instance[key] = data[key];
- }
- return Object.values(instance); 
-} 
 
 /* Insert
  *  Request for inser new record
@@ -88,13 +53,13 @@ function filterReqBody(instance,ideaModel,data) {
 function doInsert(req,currentTable,tableName) {
   var data = "";
   var id    = 0;
-  var flag = 1; 
+  var flag = 1;
   var bodyData = JSON.parse(req.parameter.data);
   
-  var Row = currentTable.getLastRow();
-  for (var i = 1; i <= Row; i++) {
-    var id1 = currentTable.getRange(i, 1).getValue();
-    if(id1>id) id=id1;
+  var row = currentTable.getLastRow();
+  for (var i = 1; i <= row; i++) {
+    var idTemp = currentTable.getRange(i, 1).getValue();
+    if(idTemp>id) id=idTemp;
   }
   bodyData["id"] = id+1;
   
@@ -132,19 +97,19 @@ function doInsert(req,currentTable,tableName) {
 /* Delete
  * Request for delete
  *
- * @request-parameter | action<string>, id<number>
- * @example-request | ?action=delete&id=2
+ * @request-parameter | action<string>,table<string> id<number>
+ * @example-request | ?action=delete&table=idea&id=2
  */
  
-function doDelete(req, sheet) {
+function doDelete(req, currentTable) {
    var id = req.parameter.id;
    var flag = 0;
 
-   var Row = sheet.getLastRow();
-   for (var i = 1; i <= Row; i++) {
-      var idTemp = sheet.getRange(i, 1).getValue();
+   var row = currentTable.getLastRow();
+   for (var i = 1; i <= row; i++) {
+      var idTemp = currentTable.getRange(i, 1).getValue();
       if (idTemp == id) {
-         sheet.deleteRow(i);
+         currentTable.deleteRow(i);
          var result = "Deleted successfully";
          flag = 1;
       }
@@ -164,17 +129,55 @@ function doDelete(req, sheet) {
 }
 
 
+/* Schema model
+ */
+
+function IDEA(id, title, description, email) { 
+  this.id = id;
+  this.title = title;
+  this.description = description;
+  this.email = email;
+  this.timestamp = Date.now();
+  this.createdOn = new Date().toLocaleString();
+}
+
+function VOTE(id, ideaId,email) { 
+  this.id = id;
+  this.ideaId = ideaId;
+  this.email = email;
+  this.timestamp = Date.now();
+  this.createdOn = new Date().toLocaleString();
+}
+
+function USER(id, name,email,profilephoto) { 
+  this.id = id;
+  this.name = name;
+  this.email = email;
+  this.profilephoto = profilephoto;
+  this.timestamp = Date.now();
+  this.createdOn = new Date().toLocaleString();
+}
+
 /* Service
  */
-function _readData(sheetObject, properties) {
+
+function filterReqBody(instance,schemaModel,data) {
+ for(var key in data) {
+   if(schemaModel.includes(key))
+     instance[key] = data[key];
+ }
+ return Object.values(instance); 
+} 
+
+function _readData(currentTable, properties) {
    if (typeof properties == "undefined") {
-      properties = _getHeaderRow(sheetObject);
+      properties = _getHeaderRow(currentTable);
       properties = properties.map(function (p) {
          return p.replace(/\s+/g, '_');
       });
    }
 
-   var rows = _getDataRows(sheetObject),
+   var rows = _getDataRows(currentTable),
    data = [];
   
    if(!rows) return data;
@@ -192,8 +195,8 @@ function _readData(sheetObject, properties) {
 }
 
 
-function _getDataRows(sheetObject) {
-   var sh = sheetObject;
+function _getDataRows(currentTable) {
+   var sh = currentTable;
   try {
     return sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
   } catch(e) {
@@ -201,8 +204,8 @@ function _getDataRows(sheetObject) {
    }
 }
 
-function _getHeaderRow(sheetObject) {
-   var sh = sheetObject;
+function _getHeaderRow(currentTable) {
+   var sh = currentTable;
    return sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
 }
 
