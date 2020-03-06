@@ -3,7 +3,7 @@
  */
 var db = SpreadsheetApp.openById("");
 var USER_MODEL = ["id", "name", "email", "profilephoto"];
-var IDEA_MODEL = ["id","title","description","email","timestamp","createdOn"];
+var IDEA_MODEL = ["id","title","description","email","startTime","endTime","tags"];
 var VOTE_MODEL = ["id", "ideaId", "email"];
 
 function doGet(req) {
@@ -132,11 +132,14 @@ function doDelete(req, currentTable) {
 /* Schema model
  */
 
-function IDEA(id, title, description, email) { 
+function IDEA(id, title, description, email,startTime,endTime, tags) { 
   this.id = id;
   this.title = title;
   this.description = description;
   this.email = email;
+  this.startTime = startTime;
+  this.endTime = endTime;
+  this.tags = tags;
   this.timestamp = Date.now();
   this.createdOn = new Date().toLocaleString();
 }
