@@ -68,8 +68,8 @@ function clearFilter() {
 function getFilteredRows() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ssId = ss.getId();
-  var sh = ss.getActiveSheet();
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+  var sheetId = ss.getActiveSheet().getSheetId();
+  let data = getIndexesOfFilteredRows(ssId,sheetId);
   Logger.log(JSON.stringify(data));
 }
 
