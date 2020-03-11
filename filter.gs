@@ -14,9 +14,9 @@ function setFilter() {
   // Criteria for showing/hiding rows in a filter
   // https://developers.google.com/sheets/api/reference/rest/v4/FilterCriteria
   filterSettings.criteria = {};
-  var columnIndex = 2;
+  var columnIndex = 5;
   filterSettings['criteria'][columnIndex] = {
-    'hiddenValues': ["England", "France"]
+    'hiddenValues': ["Accounting"]
   };
   
   var request = {
@@ -130,11 +130,9 @@ function getIndexesOfFilteredRows1(ssId, sheetId) {
 } 
 
 
-function myFunction() {
-  var filterValues = ["England", "France"]; // Please set the filter values.
-  var column = 3; // In this case, it's the column "C". Please set the column number.
-  var sheetName = "Sheet1";  // Please set the sheet name.
-
+function getFilterData(selectedId) {
+  var filterValues = [selectedId]; // Please set the filter values.
+  var column = 1; // In this case, it's the column "C". Please set the column number.
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getActiveSheet();
   var values = sheet.getDataRange().getValues();
@@ -143,11 +141,55 @@ function myFunction() {
       o.hiddenRows.push(i + 1);
       o.hiddenRowValues.push(e);
     } else {
-      o.shownRows.push(i + 1);
-      o.shownRowValues.push(e);
+      // o.shownRows.push(i + 1);
+      // o.shownRowValues.push(e);
     }
     return o;
   }, {hiddenRows: [], hiddenRowValues: [], shownRows: [], shownRowValues: []});
 
-  Logger.log(JSON.stringify(object))
+  return object;
 }
+
+function IDEA(id, title, description, email,startTime,endTime, tags) { 
+  this.id = id;
+  this.title = title;
+  this.description = description;
+  this.email = email;
+  this.startTime = startTime;
+  this.endTime = endTime;
+  this.tags = tags;
+  this.timestamp = Date.now();
+  this.createdOn = new Date().toLocaleString();
+}
+
+function filterReqBody(instance,schemaModel,data) {
+ for(var key in data) {
+   if(schemaModel.includes(key))
+     instance[key] = data[key];
+ }
+ return Object.values(instance); 
+} 
+
+
+function updateValue() {
+  let bodyData = {"id":5,"title":"Ravi Kem", "description":"Ashish demo testing","email":"test@gmail.com","tags":"html,css,js","startTime":"10:23 AM","endTime":"11:33 PM"};
+  let selectedData = getFilterData(bodyData.id);
+  Logger.log(selectedData);
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var idea = new IDEA();
+  var data = filterReqBody(idea,IDEA_MODEL,bodyData);
+  var values = [data];
+  sheet.getRange(selectedData["hiddenRows"][0], 1, values.length, values[0].length).setValues(values);
+}
+
+function test() {
+  var sheet = SpreadsheetApp.getActiveSheet();  
+  var values = [["Hello"]]
+  sheet.getRange(2, 1, 1, 1).setValues(values);
+}
+
+function onEdit() {
+  var ss = SpreadsheetApp.getActiveSheet();
+  var celladdress ='A2:B2'; 
+  ss.getRange(celladdress).setValues([[new Date(),new Date()]]);
+};
